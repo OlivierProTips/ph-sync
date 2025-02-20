@@ -121,7 +121,7 @@ def main():
     log("Sync done!")
 
     next_execution = get_next_execution(CRON_SCHEDULE)
-    log(f"Next execution: {next_execution_end}")
+    log(f"Next execution: {next_execution}")
 
 if __name__ == "__main__":
     main()

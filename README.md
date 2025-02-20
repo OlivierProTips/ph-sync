@@ -15,7 +15,7 @@ This project has been made to sync full v6.x configuration (teleporter) from one
 services:
   pihole-sync:
     image: olivierprotips/ph-sync:latest
-    container_name: pihole_sync
+    container_name: ph-sync
     environment:
       - PIHOLE_MASTER=http://pihole.master|password123
       - PIHOLE_SLAVES=http://pihole.slave1|password123,http://pihole.slave2|password123
