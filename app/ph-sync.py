@@ -23,6 +23,7 @@ def custom_warning_format(message, category, filename, lineno, file=None, line=N
     if issubclass(category, urllib3.exceptions.InsecureRequestWarning):
         return f"{category.__name__}: {message}\n"
     return warnings.formatwarning(message, category, filename, lineno, file, line)
+warnings.formatwarning = custom_warning_format
 
 def get_next_execution(cron_schedule):
     """Calculate the next execution time based on the cron schedule"""
