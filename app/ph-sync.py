@@ -2,6 +2,8 @@ import os, sys
 import requests
 import pendulum
 from croniter import croniter
+import warnings
+import urllib3
 
 sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
@@ -15,6 +17,12 @@ PIHOLE_MASTER = os.getenv("PIHOLE_MASTER", DEFAULT_PIHOLE_MASTER)
 PIHOLE_SLAVES = os.getenv("PIHOLE_SLAVES", DEFAULT_PIHOLE_SLAVES).split(",")
 CRON_SCHEDULE = os.getenv("CRON_SCHEDULE", DEFAULT_CRON_SCHEDULE)
 EXPORT_FILE = "/tmp/teleporter.zip"
+
+def custom_warning_format(message, category, filename, lineno, file=None, line=None):
+    """Display only the main message of warnings"""
+    if issubclass(category, urllib3.exceptions.InsecureRequestWarning):
+        return f"{category.__name__}: {message}\n"
+    return warnings.formatwarning(message, category, filename, lineno, file, line)
 
 def get_next_execution(cron_schedule):
     """Calculate the next execution time based on the cron schedule"""
