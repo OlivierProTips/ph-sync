@@ -2,7 +2,7 @@
 
 CRON_SCHEDULE="${CRON_SCHEDULE:-0 * * * *}"
 
-echo "Configuration du cron avec la planification : $CRON_SCHEDULE"
+echo "Configuring cron with schedule: $CRON_SCHEDULE"
 
 CRON_FILE="/etc/cron.d/my-cron-file"
 
