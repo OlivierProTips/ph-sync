@@ -58,7 +58,7 @@ You can use `ph-sync.py` directly than create a cron job manually. Remember to c
 
 ## TODO
 
-- [ ] Add https support
+- [x] Add https support
 - [x] Add "first start at launch" environment variable
 - [x] Add next launch in logs
 - [x] Add dates in logs
