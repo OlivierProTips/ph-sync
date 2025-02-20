@@ -51,10 +51,10 @@ You can use `ph-sync.py` directly than create a cron job manually. Remember to c
 
 ### Optional Environment Variables
 
-| Name          | Default      | Description                                     |
-| ------------- | ------------ | ----------------------------------------------- |
-| CRON_SCHEDULE | 0 * * * *    | Specifies the cron schedule for synchronization |
-| TZ            | Europe/Paris | Specifies the timezone for logs and cron        |
+| Name          | Default   | Description                                     |
+| ------------- | --------- | ----------------------------------------------- |
+| CRON_SCHEDULE | 0 * * * * | Specifies the cron schedule for synchronization |
+| TZ            | UTC       | Specifies the timezone for logs and cron        |
 
 ## TODO
 
