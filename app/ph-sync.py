@@ -2,7 +2,6 @@ import os, sys
 import requests
 import pendulum
 from croniter import croniter
-from datetime import datetime
 
 sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
@@ -17,16 +16,16 @@ PIHOLE_SLAVES = os.getenv("PIHOLE_SLAVES", DEFAULT_PIHOLE_SLAVES).split(",")
 CRON_SCHEDULE = os.getenv("CRON_SCHEDULE", DEFAULT_CRON_SCHEDULE)
 EXPORT_FILE = "/tmp/teleporter.zip"
 
-def get_next_execution(cron_schedule, tz="UTC"):
+def get_next_execution(cron_schedule):
     """Calculate the next execution time based on the cron schedule"""
-    now = pendulum.now(tz)
+    now = pendulum.now()
     cron = croniter(cron_schedule, now)
     next_execution = cron.get_next(pendulum.DateTime)
     return next_execution
 
 def log(message):
-    """improve log with timestamp"""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    """Better log with a timestamp"""
+    timestamp = pendulum.now().to_datetime_string()
     print(f"[{timestamp}] {message}")
 
 def get_sid(pihole_url, password):
@@ -68,7 +67,6 @@ def export_teleporter(sid, pihole_url):
     with open(EXPORT_FILE, "wb") as f:
         for chunk in response.iter_content(chunk_size=8192):
             f.write(chunk)
-    log(f"Teleporter successfully exported: {EXPORT_FILE}")
 
 def import_teleporter(sid, pihole_url):
     """Upload the Teleporter file"""
@@ -97,9 +95,6 @@ def delete_session(pihole_url, sid):
         log(f"Error deleting session {session_id} on {pihole_url}: {response.text}")
 
 def main():
-    next_execution_start = get_next_execution(CRON_SCHEDULE)
-    log(f"La prochaine exécution est prévue pour : {next_execution_start}")
-
     log("Sync start...")
     master_url, master_password = PIHOLE_MASTER.split("|")
     log(f"{master_url}: Authenticating...")
@@ -125,8 +120,8 @@ def main():
     
     log("Sync done!")
 
-    next_execution_end = get_next_execution(CRON_SCHEDULE)
-    log(f"La prochaine exécution est prévue pour : {next_execution_end}")
+    next_execution = get_next_execution(CRON_SCHEDULE)
+    log(f"Next execution: {next_execution_end}")
 
 if __name__ == "__main__":
     main()
