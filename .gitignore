@@ -1,6 +1,2 @@
-/.github
 /.venv
-/Dockerfile
-/app
-/compose.yml
 /test
