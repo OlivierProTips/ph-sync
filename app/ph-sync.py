@@ -1,16 +1,32 @@
-import os,sys
+import os, sys
 import requests
+import pendulum
+from croniter import croniter
 
 sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
 
 DEFAULT_PIHOLE_MASTER = "http://pihole.master|password123"
 DEFAULT_PIHOLE_SLAVES = "http://pihole.slave1|password123,http://pihole.slave2|password123"
+DEFAULT_CRON_SCHEDULE = "0 * * * *"
 
 # Retrieve environment variables
 PIHOLE_MASTER = os.getenv("PIHOLE_MASTER", DEFAULT_PIHOLE_MASTER)
 PIHOLE_SLAVES = os.getenv("PIHOLE_SLAVES", DEFAULT_PIHOLE_SLAVES).split(",")
+CRON_SCHEDULE = os.getenv("CRON_SCHEDULE", DEFAULT_CRON_SCHEDULE)
 EXPORT_FILE = "/tmp/teleporter.zip"
+
+def get_next_execution(cron_schedule):
+    """Calculate the next execution time based on the cron schedule"""
+    now = pendulum.now()
+    cron = croniter(cron_schedule, now)
+    next_execution = cron.get_next(pendulum.DateTime)
+    return next_execution
+
+def log(message):
+    """Better log with a timestamp"""
+    timestamp = pendulum.now().to_datetime_string()
+    print(f"[{timestamp}] {message}")
 
 def get_sid(pihole_url, password):
     """Get SID after authentication"""
@@ -51,7 +67,6 @@ def export_teleporter(sid, pihole_url):
     with open(EXPORT_FILE, "wb") as f:
         for chunk in response.iter_content(chunk_size=8192):
             f.write(chunk)
-    print(f"Teleporter successfully exported: {EXPORT_FILE}")
 
 def import_teleporter(sid, pihole_url):
     """Upload the Teleporter file"""
@@ -68,7 +83,7 @@ def delete_session(pihole_url, sid):
     """Delete the active session"""
     session_id = get_current_session_id(pihole_url, sid)
     if session_id is None:
-        print(f"No active session found for {pihole_url}, nothing to delete.")
+        log(f"No active session found for {pihole_url}, nothing to delete.")
         return
     
     response = requests.delete(
@@ -77,33 +92,36 @@ def delete_session(pihole_url, sid):
         verify=False
     )
     if response.status_code != 204:
-        print(f"Error deleting session {session_id} on {pihole_url}: {response.text}")
+        log(f"Error deleting session {session_id} on {pihole_url}: {response.text}")
 
 def main():
-    print("Sync start...")
+    log("Sync start...")
     master_url, master_password = PIHOLE_MASTER.split("|")
-    print(f"{master_url}: Authenticating...")
+    log(f"{master_url}: Authenticating...")
     master_sid = get_sid(master_url, master_password)
     
-    print(f"{master_url}: Exporting configuration...")
+    log(f"{master_url}: Exporting configuration...")
     export_teleporter(master_sid, master_url)
 
     for slave in PIHOLE_SLAVES:
         slave_url, slave_password = slave.split("|")
-        print(f"{slave_url}: Syncing...")
-        print(f"{slave_url}: Authenticating...")
+        log(f"{slave_url}: Syncing...")
+        log(f"{slave_url}: Authenticating...")
         slave_sid = get_sid(slave_url, slave_password)
 
-        print(f"{slave_url}: Importing configuration...")
+        log(f"{slave_url}: Importing configuration...")
         import_teleporter(slave_sid, slave_url)
 
-        print(f"{slave_url}: Deleting session...")
+        log(f"{slave_url}: Deleting session...")
         delete_session(slave_url, slave_sid)
 
-    print(f"{master_url}: Deleting master session...")
+    log(f"{master_url}: Deleting master session...")
     delete_session(master_url, master_sid)
     
-    print("Sync done!")
+    log("Sync done!")
+
+    next_execution = get_next_execution(CRON_SCHEDULE)
+    log(f"Next execution: {next_execution_end}")
 
 if __name__ == "__main__":
     main()

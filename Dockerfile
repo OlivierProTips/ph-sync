@@ -8,6 +8,6 @@ COPY app/start.sh .
 
 RUN chmod +x start.sh
 
-RUN pip install requests
+RUN pip install -r requirements.txt
 
 CMD ["/app/start.sh"]
