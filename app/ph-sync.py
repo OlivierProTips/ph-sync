@@ -13,23 +13,25 @@ sys.stderr.reconfigure(line_buffering=True)
 DEFAULT_PIHOLE_MASTER = "http://pihole.master|password123"
 DEFAULT_PIHOLE_SLAVES = "http://pihole.slave1|password123,http://pihole.slave2|password123"
 DEFAULT_CRON_SCHEDULE = "0 * * * *"
+DEFAULT_TIMEZONE = "UTC"
 
 # Retrieve environment variables
 PIHOLE_MASTER = os.getenv("PIHOLE_MASTER", DEFAULT_PIHOLE_MASTER)
 PIHOLE_SLAVES = os.getenv("PIHOLE_SLAVES", DEFAULT_PIHOLE_SLAVES).split(",")
 CRON_SCHEDULE = os.getenv("CRON_SCHEDULE", DEFAULT_CRON_SCHEDULE)
+TIMEZONE = os.getenv("TZ", DEFAULT_TIMEZONE)
 EXPORT_FILE = "/tmp/teleporter.zip"
 
 def get_next_execution(cron_schedule):
     """Calculate the next execution time based on the cron schedule"""
-    now = pendulum.now()
+    now = pendulum.now(TIMEZONE)
     cron = croniter(cron_schedule, now)
     next_execution = cron.get_next(pendulum.DateTime)
     return next_execution
 
 def log(message):
     """Better log with a timestamp"""
-    timestamp = pendulum.now().to_datetime_string()
+    timestamp = pendulum.now(TIMEZONE).to_datetime_string()
     print(f"[{timestamp}] {message}")
 
 def get_sid(pihole_url, password):
